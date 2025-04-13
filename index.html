@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VisionAI - Advanced Object Detection</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Particle Background Canvas -->
+    <canvas id="particleCanvas"></canvas>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <span class="logo-text">Vision<span class="logo-accent">AI</span></span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#home">
+                            <i class="bi bi-house-door me-1"></i>Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#features">
+                            <i class="bi bi-gem me-1"></i>Features
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#team">
+                            <i class="bi bi-people me-1"></i>Team
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#contactModal">
+                            <i class="bi bi-envelope me-1"></i>Contact
+                        </a>
+                    </li>
+                    <li class="nav-item ms-2">
+                        <a class="btn btn-demo rounded-pill px-3 py-2" href="#detection">
+                            <i class="bi bi-eye me-1"></i>Try Demo
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section" id="home">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 hero-content">
+                    <h1 class="hero-title animate__animated animate__fadeInUp">
+                        Next-Gen <span class="gradient-text">Object Detection</span>
+                    </h1>
+                    <p class="hero-subtitle animate__animated animate__fadeInUp animate__delay-1s">
+                        Powerful computer vision that detects objects in real-time with state-of-the-art accuracy
+                    </p>
+                    <div class="hero-btns animate__animated animate__fadeInUp animate__delay-2s">
+                        <a href="#detection" class="btn btn-primary btn-lg rounded-pill">
+                            <i class="bi bi-camera me-2"></i>Start Detection
+                        </a>
+                        <a href="#features" class="btn btn-outline btn-lg rounded-pill ms-3">
+                            <i class="bi bi-info-circle me-2"></i>Learn More
+                        </a>
+                    </div>
+                    <div class="tech-badges animate__animated animate__fadeInUp animate__delay-3s">
+                        <span class="badge">YOLOv9</span>
+                        <span class="badge">TensorFlow</span>
+                        <span class="badge">Computer Vision</span>
+                        <span class="badge">Real-time</span>
+                    </div>
+                </div>
+                <!-- <div class="col-lg-6 d-flex justify-content-center">
+                    <div class="hero-image animate__animated animate__zoomIn animate__delay-1s">
+                        <img src="../assets/hero.jpeg" alt="AI Vision Illustration">
+                        <div class="floating-tag tag-1">Person</div>
+                        <div class="floating-tag tag-2">Dog</div>
+                        <div class="floating-tag tag-3">Car</div>
+                        <div class="pulse-circle"></div>
+                    </div>
+                </div> -->
+            </div>
+        </div>
+        <div class="hero-shape">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320">
+                <path fill="#ffffff" fill-opacity="1" d="M0,160L48,176C96,192,192,224,288,213.3C384,203,480,149,576,149.3C672,149,768,203,864,208C960,213,1056,171,1152,149.3C1248,128,1344,128,1392,128L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+            </svg>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section" id="features">
+        <div class="container">
+            <div class="section-header text-center">
+                <h6 class="section-pre-title">POWERFUL CAPABILITIES</h6>
+                <h2 class="section-title">Advanced <span class="gradient-text">Features</span></h2>
+                <p class="section-subtitle">Our AI detection system offers cutting-edge capabilities</p>
+            </div>
+
+            <div class="row features-container">
+                <div class="col-md-4 feature-card-wrapper">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-camera"></i>
+                        </div>
+                        <h4>Multi-Model Detection</h4>
+                        <p>Choose between YOLOv8 and YOLOv9 models for optimal performance on different devices</p>
+                    </div>
+                </div>
+                <div class="col-md-4 feature-card-wrapper">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-camera-video"></i>
+                        </div>
+                        <h4>Real-time Processing</h4>
+                        <p>Detect objects in real-time through your camera with high-speed inference</p>
+                    </div>
+                </div>
+                <div class="col-md-4 feature-card-wrapper">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-cloud-upload"></i>
+                        </div>
+                        <h4>Image Analysis</h4>
+                        <p>Upload and analyze images with precise object detection and classification</p>
+                    </div>
+                </div>
+                <div class="col-md-4 feature-card-wrapper">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-soundwave"></i>
+                        </div>
+                        <h4>Audio Descriptions</h4>
+                        <p>Generate voice descriptions of detected objects with customizable settings</p>
+                    </div>
+                </div>
+                <div class="col-md-4 feature-card-wrapper">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-pie-chart"></i>
+                        </div>
+                        <h4>Statistical Analysis</h4>
+                        <p>Get detailed statistics about detected objects with confidence scores</p>
+                    </div>
+                </div>
+                <div class="col-md-4 feature-card-wrapper">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-phone"></i>
+                        </div>
+                        <h4>Mobile Compatibility</h4>
+                        <p>Works seamlessly on mobile devices with responsive design</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Detection Section -->
+    <section class="detection-section" id="detection">
+        <div class="container">
+            <div class="section-header text-center">
+                <h6 class="section-pre-title">INTERACTIVE DEMO</h6>
+                <h2 class="section-title">Try <span class="gradient-text">VisionAI</span> Now</h2>
+                <p class="section-subtitle">Experience our AI object detection in real-time</p>
+            </div>
+
+            <div class="detection-container">
+                <!-- Model Selection Header -->
+                <div class="model-header">
+                    <h5><i class="bi bi-sliders me-2"></i>Detection Settings</h5>
+                    <div class="model-controls">
+                        <div class="model-select-group">
+                            <label for="modelSelect">AI Model:</label>
+                            <select id="modelSelect" class="form-select">
+                                <option value="yolov8s.pt">YOLOv8s (Accuracy)</option>
+                                <option value="yolov9m.pt">YOLOv9m (Highest Accuracy & Fastest)</option>
+                            </select>
+                        </div>
+                        <div class="threshold-slider">
+                            <label for="thresholdRange">Confidence: <span id="thresholdValue">75%</span></label>
+                            <input type="range" class="form-range" id="thresholdRange" min="10" max="95" value="75">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detection-content">
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <!-- Camera Section -->
+                            <div class="camera-section">
+                                <div class="camera-actions">
+                                    <button id="uploadBtn" class="action-btn upload-btn">
+                                        <i class="bi bi-cloud-upload"></i>
+                                        <span>Upload Image</span>
+                                    </button>
+                                    <input type="file" id="imageUpload" accept="image/*" style="display:none;">
+                                    
+                                    <button id="liveCaptureBtn" class="action-btn capture-btn">
+                                        <i class="bi bi-camera-video"></i>
+                                        <span>Live Camera</span>
+                                    </button>
+                                    
+                                    <button id="screenshotBtn" class="action-btn screenshot-btn" disabled>
+                                        <i class="bi bi-camera"></i>
+                                        <span>Take Snapshot</span>
+                                    </button>
+                                </div>
+
+                                <div id="captureContainer" class="capture-container">
+                                    <div class="video-wrapper">
+                                        <video id="liveVideo" playsinline style="display:none;"></video>
+                                        <canvas id="detectedCanvas"></canvas>
+                                        <div id="loadingOverlay" style="display:none;">
+                                            <div class="spinner"></div>
+                                            <p>Processing...</p>
+                                        </div>
+                                        <div class="corner-label top-left">VisionAI</div>
+                                        <div class="corner-label bottom-right" id="modelLabel"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-4">
+                            <!-- Results Panel -->
+                            <div class="results-panel p-3">
+                                <div class="panel-tabs">
+                                    <button class="panel-tab active" data-tab="objects">
+                                        <i class="bi bi-eye"></i> Objects
+                                    </button>
+                                    <button class="panel-tab" data-tab="stats">
+                                        <i class="bi bi-graph-up"></i> Stats
+                                    </button>
+                                    <button class="panel-tab" data-tab="audio">
+                                        <i class="bi bi-volume-up"></i> Audio
+                                    </button>
+                                </div>
+
+                                <div class="panel-content mt-2 p-1">
+                                    <!-- Objects Tab -->
+                                    <div class="tab-pane active" id="objectsTab">
+                                        <h6 class="panel-title">
+                                            <i class="bi bi-list-check me-2"></i>
+                                            Detected Objects
+                                            <span class="object-counter">0</span>
+                                        </h6>
+                                        <ul id="objectList" class="object-list">
+                                            <li class="no-objects">No objects detected yet</li>
+                                        </ul>
+                                    </div>
+
+                                    <!-- Stats Tab -->
+                                    <div class="tab-pane" id="statsTab">
+                                        <h6 class="panel-title">
+                                            <i class="bi bi-bar-chart me-2"></i>
+                                            Detection Statistics
+                                        </h6>
+                                        <div class="stats-content">
+                                            <div class="stats-item">
+                                                <label>Total Objects:</label>
+                                                <span id="totalObjects">0</span>
+                                            </div>
+                                            <div class="stats-item">
+                                                <label>Categories:</label>
+                                                <span id="totalCategories">0</span>
+                                            </div>
+                                            <div class="stats-item">
+                                                <label>Avg. Confidence:</label>
+                                                <span id="avgConfidence">0%</span>
+                                            </div>
+                                            <div class="stats-chart">
+                                                <canvas id="objectTypeChart"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Audio Tab -->
+                                    <div class="tab-pane" id="audioTab">
+                                        <h6 class="panel-title">
+                                            <i class="bi bi-soundwave me-2"></i>
+                                            Audio Description
+                                        </h6>
+                                        <div class="audio-controls">
+                                            <div class="audio-option">
+                                                <label for="voiceTypeSelect">Voice Type:</label>
+                                                <select id="voiceTypeSelect" class="form-select form-select-sm">
+                                                    <option value="male">Male Voice</option>
+                                                    <option value="female">Female Voice</option>
+                                                </select>
+                                            </div>
+                                            <div class="audio-option">
+                                                <label for="speechRateSelect">Speech Rate:</label>
+                                                <select id="speechRateSelect" class="form-select form-select-sm">
+                                                    <option value="0.5">Slow</option>
+                                                    <option value="1" selected>Normal</option>
+                                                    <option value="1.5">Fast</option>
+                                                </select>
+                                            </div>
+                                            <button id="generateAudioBtn" class="btn btn-generate-audio" disabled>
+                                                <i class="bi bi-play-circle me-2"></i>
+                                                Generate Audio
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Team Section -->
+<!-- Team Section -->
+<section id="team" class="team-section">
+    <div class="container">
+        <div class="section-header">
+            <div class="section-pre-title">OUR AMAZING TEAM</div>
+            <h2 class="section-title">Meet The <span class="gradient-text">Experts</span></h2>
+            <p class="section-subtitle">Our dedicated team of professionals working together to build innovative computer vision solutions.</p>
+        </div>
+        
+        <div class="team-container">
+            <div class="row">
+                <!-- Team Member 1 -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="team-card">
+                        <span class="experience-badge">5+ Years Experience</span>
+                        <div class="team-profile">
+                            <img src="../assets/Ali hassan.jpg" alt="Team Member 1">
+                        </div>
+                        <div class="team-info">
+                            <h4>Ali Hassan</h4>
+                            <div class="team-role">Lead Developer</div>
+                            <div class="team-skills">
+                                <span class="skill">Full Stack</span>
+                                <span class="skill">Python</span>
+                                <span class="skill">Computer Vision</span>
+                                <span class="skill">ML Algorithms</span>
+                            </div>
+                            <p class="team-contributions">Lead development of core detection models & implemented real-time object detection system.</p>
+                            <div class="team-social">
+                                <a href="#" class="social-icon"><i class="bi bi-github"></i></a>
+                                <a href="#" class="social-icon"><i class="bi bi-linkedin"></i></a>
+                                <a href="#" class="social-icon"><i class="bi bi-instagram"></i></a>
+                                <a href="#" class="social-icon"><i class="bi bi-facebook"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Team Member 2 -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="team-card">
+                        <span class="experience-badge">4+ Years Experience</span>
+                        <div class="team-profile">
+                            <img src="../assets/Ali hassan.jpg" alt="Team Member 2">
+                        </div>
+                        <div class="team-info">
+                            <h4>M Zuhaib</h4>
+                            <div class="team-role">UI/UX Designer</div>
+                            <div class="team-skills">
+                                <span class="skill">UI Design</span>
+                                <span class="skill">Figma</span>
+                                <span class="skill">Front-end</span>
+                                <span class="skill">CSS/SCSS</span>
+                            </div>
+                            <p class="team-contributions">Designed the intuitive user interface and created the responsive layout for all device types.</p>
+                            <div class="team-social">
+                                <a href="#" class="social-icon"><i class="bi bi-github"></i></a>
+                                <a href="#" class="social-icon"><i class="bi bi-linkedin"></i></a>
+                                <a href="#" class="social-icon"><i class="bi bi-instagram"></i></a>
+                                <a href="#" class="social-icon"><i class="bi bi-facebook"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Team Member 3 -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="team-card">
+                        <span class="experience-badge">3+ Years Experience</span>
+                        <div class="team-profile">
+                            <img src="../assets/M Irfan.jpg" alt="Team Member 3">
+                        </div>
+                        <div class="team-info">
+                            <h4>M Irfan</h4>
+                            <div class="team-role">Backend Engineer</div>
+                            <div class="team-skills">
+                                <span class="skill">Node.js</span>
+                                <span class="skill">MongoDB</span>
+                                <span class="skill">API Design</span>
+                                <span class="skill">AWS</span>
+                            </div>
+                            <p class="team-contributions">Developed the API infrastructure and engineered the scalable cloud deployment solution.</p>
+                            <div class="team-social">
+                                <a href="#" class="social-icon"><i class="bi bi-github"></i></a>
+                                <a href="#" class="social-icon"><i class="bi bi-linkedin"></i></a>
+                                <a href="#" class="social-icon"><i class="bi bi-instagram"></i></a>
+                                <a href="#" class="social-icon"><i class="bi bi-facebook"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+    <!-- Contact Modal -->
+    <div class="modal fade" id="contactModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Get In Touch</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="contact-form">
+                        <div class="mb-3">
+                            <label for="nameInput" class="form-label">Your Name</label>
+                            <div class="input-with-icon">
+                                <i class="bi bi-person"></i>
+                                <input type="text" class="form-control" id="nameInput" placeholder="Enter your name">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="emailInput" class="form-label">Email Address</label>
+                            <div class="input-with-icon">
+                                <i class="bi bi-envelope"></i>
+                                <input type="email" class="form-control" id="emailInput" placeholder="Enter your email">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="subjectInput" class="form-label">Subject</label>
+                            <div class="input-with-icon">
+                                <i class="bi bi-chat"></i>
+                                <input type="text" class="form-control" id="subjectInput" placeholder="Message subject">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="messageInput" class="form-label">Message</label>
+                            <div class="input-with-icon textarea">
+                                <i class="bi bi-pencil"></i>
+                                <textarea class="form-control" id="messageInput" rows="4" placeholder="Your message"></textarea>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-send me-2"></i>Send Message
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="footer-brand">
+                            <h3>Vision<span>AI</span></h3>
+                            <p>Advanced object detection with cutting-edge computer vision technology.</p>
+                            <div class="footer-social">
+                                <a href="#"><i class="bi bi-facebook"></i></a>
+                                <a href="#"><i class="bi bi-twitter"></i></a>
+                                <a href="#"><i class="bi bi-github"></i></a>
+                                <a href="#"><i class="bi bi-linkedin"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <h5>Quick Links</h5>
+                        <ul class="footer-links">
+                            <li><a href="#home">Home</a></li>
+                            <li><a href="#features">Features</a></li>
+                            <li><a href="#detection">Demo</a></li>
+                            <li><a href="#team">Team</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-3">
+                        <h5>Resources</h5>
+                        <ul class="footer-links">
+                            <li><a href="#">Documentation</a></li>
+                            <li><a href="#">API Reference</a></li>
+                            <li><a href="#">GitHub Repository</a></li>
+                            <li><a href="#">Privacy Policy</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-3">
+                        <h5>Contact</h5>
+                        <ul class="footer-contact">
+                            <li><i class="bi bi-envelope"></i> ali0454hassan@gmail.com</li>
+                            <li><i class="bi bi-telephone"></i> +92 302 5329536</li>
+                            <li><i class="bi bi-geo-alt"></i> Lahore, Pakistan</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 VisionAI. All Rights Reserved.</p>
+                <p class="made-with">
+                    Made with <i class="bi bi-heart-fill"></i> by Team VisionAI
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollTrigger.min.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>

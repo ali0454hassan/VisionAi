@@ -1,0 +1,9 @@
+# File: backend/requirements.txt
+flask
+flask-cors
+ultralytics
+opencv-python-headless
+numpy
+pillow
+torch
+torchvision
