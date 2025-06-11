@@ -7,7 +7,10 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
 </head>
 <body>
     <!-- Particle Background Canvas -->
@@ -219,7 +222,7 @@
 
                                 <div id="captureContainer" class="capture-container">
                                     <div class="video-wrapper">
-                                        <video id="liveVideo" playsinline style="display:none;"></video>
+                                        <video id="liveVideo" playsinline style="display:none; transform: scaleX(-1);"></video>
                                         <canvas id="detectedCanvas"></canvas>
                                         <div id="loadingOverlay" style="display:none;">
                                             <div class="spinner"></div>
@@ -280,7 +283,8 @@
                                                 <span id="avgConfidence">0%</span>
                                             </div>
                                             <div class="stats-chart">
-                                                <canvas id="objectTypeChart"></canvas>
+                                                <canvas id="pieChartCanvas" width="400" height="400"></canvas>
+
                                             </div>
                                         </div>
                                     </div>
@@ -322,7 +326,6 @@
         </div>
     </section>
 
-    <!-- Team Section -->
 <!-- Team Section -->
 <section id="team" class="team-section">
     <div class="container">
@@ -337,25 +340,26 @@
                 <!-- Team Member 1 -->
                 <div class="col-lg-4 col-md-6">
                     <div class="team-card">
-                        <span class="experience-badge">5+ Years Experience</span>
+                        <span class="experience-badge">1+ Years Experience</span>
                         <div class="team-profile">
-                            <img src="../assets/Ali hassan.jpg" alt="Team Member 1">
+                            <img src="{{ url_for('static', filename='assets/Ali_hassan.jpg') }}" alt="Team Member 1">
                         </div>
                         <div class="team-info">
                             <h4>Ali Hassan</h4>
-                            <div class="team-role">Lead Developer</div>
+                            <div class="team-role">Web Developer</div>
                             <div class="team-skills">
-                                <span class="skill">Full Stack</span>
-                                <span class="skill">Python</span>
-                                <span class="skill">Computer Vision</span>
-                                <span class="skill">ML Algorithms</span>
+                                <span class="skill">Front-end</span>
+                                <span class="skill">JavaScript</span>
+                                <span class="skill">Backbone.js</span>
+                                <span class="skill">Django</span>
+                                <span class="skill">Flask</span>
                             </div>
-                            <p class="team-contributions">Lead development of core detection models & implemented real-time object detection system.</p>
+                            <p class="team-contributions">Lead development of core detection models & implemented real-time ODS (Backend).</p>
                             <div class="team-social">
-                                <a href="#" class="social-icon"><i class="bi bi-github"></i></a>
-                                <a href="#" class="social-icon"><i class="bi bi-linkedin"></i></a>
-                                <a href="#" class="social-icon"><i class="bi bi-instagram"></i></a>
-                                <a href="#" class="social-icon"><i class="bi bi-facebook"></i></a>
+                                <a href="https://github.com/ali0454hassan" class="social-icon"><i class="bi bi-github"></i></a>
+                                <a href="https://www.linkedin.com/in/ali-hassan-4t?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" class="social-icon"><i class="bi bi-linkedin"></i></a>
+                                <a href="https://www.instagram.com/alee_hassan_536?igsh=NTZ6cGQxbWUwaHho" class="social-icon"><i class="bi bi-instagram"></i></a>
+                                <a href="https://www.facebook.com/mianalihassankhichi?mibextid=ZbWKwL" class="social-icon"><i class="bi bi-facebook"></i></a>
                             </div>
                         </div>
                     </div>
@@ -364,9 +368,9 @@
                 <!-- Team Member 2 -->
                 <div class="col-lg-4 col-md-6">
                     <div class="team-card">
-                        <span class="experience-badge">4+ Years Experience</span>
+                        <span class="experience-badge">2+ Years Experience</span>
                         <div class="team-profile">
-                            <img src="../assets/Ali hassan.jpg" alt="Team Member 2">
+                            <img src="{{ url_for('static', filename='assets/M_Zuhaib.jpg') }}" alt="Zuhaib">
                         </div>
                         <div class="team-info">
                             <h4>M Zuhaib</h4>
@@ -377,7 +381,7 @@
                                 <span class="skill">Front-end</span>
                                 <span class="skill">CSS/SCSS</span>
                             </div>
-                            <p class="team-contributions">Designed the intuitive user interface and created the responsive layout for all device types.</p>
+                            <p class="team-contributions">Designed the intuitive user interface and created the responsive layouts. Documentation also.</p>
                             <div class="team-social">
                                 <a href="#" class="social-icon"><i class="bi bi-github"></i></a>
                                 <a href="#" class="social-icon"><i class="bi bi-linkedin"></i></a>
@@ -391,20 +395,21 @@
                 <!-- Team Member 3 -->
                 <div class="col-lg-4 col-md-6">
                     <div class="team-card">
-                        <span class="experience-badge">3+ Years Experience</span>
+                        <span class="experience-badge">1+ Years Experience</span>
                         <div class="team-profile">
-                            <img src="../assets/M Irfan.jpg" alt="Team Member 3">
+                            <img src="{{ url_for('static', filename='assets/M_Irfan.jpg')}}" alt="Irfan">
                         </div>
                         <div class="team-info">
                             <h4>M Irfan</h4>
-                            <div class="team-role">Backend Engineer</div>
+                            <div class="team-role">Quality Ansurer </div>
                             <div class="team-skills">
-                                <span class="skill">Node.js</span>
-                                <span class="skill">MongoDB</span>
-                                <span class="skill">API Design</span>
-                                <span class="skill">AWS</span>
+                                <span class="skill">Documentation</span>
+                                <span class="skill">Front-end</span>
+                                <span class="skill">JavaScript</span>
+                                <span class="skill">Vibe Programming</span>
+                                <span class="skill">Figma</span>
                             </div>
-                            <p class="team-contributions">Developed the API infrastructure and engineered the scalable cloud deployment solution.</p>
+                            <p class="team-contributions">Create Documentation and apply the different types of testing.</p>
                             <div class="team-social">
                                 <a href="#" class="social-icon"><i class="bi bi-github"></i></a>
                                 <a href="#" class="social-icon"><i class="bi bi-linkedin"></i></a>
@@ -478,7 +483,7 @@
                             <div class="footer-social">
                                 <a href="#"><i class="bi bi-facebook"></i></a>
                                 <a href="#"><i class="bi bi-twitter"></i></a>
-                                <a href="#"><i class="bi bi-github"></i></a>
+                                <a href="https://github.com/ali0454hassan/VisionAi"><i class="bi bi-github"></i></a>
                                 <a href="#"><i class="bi bi-linkedin"></i></a>
                             </div>
                         </div>
@@ -497,7 +502,7 @@
                         <ul class="footer-links">
                             <li><a href="#">Documentation</a></li>
                             <li><a href="#">API Reference</a></li>
-                            <li><a href="#">GitHub Repository</a></li>
+                            <li><a href="https://github.com/ali0454hassan/VisionAi" target="blank">GitHub Repository</a></li>
                             <li><a href="#">Privacy Policy</a></li>
                         </ul>
                     </div>
@@ -525,6 +530,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollTrigger.min.js"></script>
-    <script src="main.js"></script>
+
+
+    <!-- <script src="main.js"></script> -->
 </body>
 </html>
