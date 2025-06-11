@@ -819,6 +819,14 @@ a {
 .panel-tab.active::after {
     transform: scaleX(1);
 }
+.full-width-section {
+    width: 100%;
+}
+
+.full-width-section .results-panel {
+    width: 100%;
+}
+
 
 /* ============================
    TEAM MEMBER CARDS
@@ -900,6 +908,7 @@ a {
     height: 100%;
     object-fit: cover;
     transition: var(--transition-normal);
+    
 }
 
 .team-card:hover .team-profile img {
@@ -941,6 +950,7 @@ a {
 .team-card:hover .skill {
     background: rgba(99, 102, 241, 0.1);
     transform: translateY(-3px);
+    cursor: pointer;
 }
 
 .team-contributions {
