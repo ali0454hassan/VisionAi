@@ -8,10 +8,16 @@ from collections import Counter
 from PIL import Image
 from ultralytics import YOLO
 import os
+from flask import Flask, render_template
+
 
 # App Configuration
 app = Flask(__name__)
 CORS(app)
+
+@app.route('/')
+def home():
+    return render_template('index.html')
 
 # Model paths
 MODELS = {
