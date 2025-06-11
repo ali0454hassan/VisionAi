@@ -1,3 +1,5 @@
+this.isLiveDetectionRunning = false;
+this.liveDetectionInterval = null;
 // Particle Animation Background
 class ParticleBackground {
     constructor(canvasId) {
@@ -112,7 +114,8 @@ class VisionAIDetector {
         this.generateAudioBtn = document.getElementById('generateAudioBtn');
         this.voiceTypeSelect = document.getElementById('voiceTypeSelect');
         this.speechRateSelect = document.getElementById('speechRateSelect');
-        
+        this.availableVoices = null;
+    this.pendingAudioDescription = null;
         // Tab panel elements
         this.objectsTab = document.querySelector('[data-tab="objects"]');
         this.statsTab = document.querySelector('[data-tab="stats"]');
@@ -168,41 +171,38 @@ class VisionAIDetector {
         this.statsTab.addEventListener('click', () => this.switchTab('stats'));
         this.audioTab.addEventListener('click', () => this.switchTab('audio'));
         
-        // Initialize charts
-        this.initChart();
     }
 
-    /* ==============================================
+/* ==============================================
         Tab Switching Logic under Detection Section
     ================================================== */
 
     switchTab(tabId) {
-    // Remove active class from all tabs
-    [this.objectsTab, this.statsTab, this.audioTab].forEach(tab => 
-        tab.classList.remove('active'));
-    
-    // Hide all panes first
-    this.objectsTabPane.style.display = 'none';
-    this.statsTabPane.style.display = 'none';
-    this.audioTabPane.style.display = 'none';
-    
-    // Add active class to selected tab and show only its pane
-    if (tabId === 'objects') {
-        this.objectsTab.classList.add('active');
-        this.objectsTabPane.style.display = 'block';
-    } else if (tabId === 'stats') {
-        this.statsTab.classList.add('active');
-        this.statsTabPane.style.display = 'block';
-        // Refresh stats content if we have results
-        if (this.detectionResults) {
-            this.updateStats(this.detectionResults);
+        // Remove active class from all tabs
+        [this.objectsTab, this.statsTab, this.audioTab].forEach(tab => 
+            tab.classList.remove('active'));
+        
+        // Hide all panes first
+        this.objectsTabPane.style.display = 'none';
+        this.statsTabPane.style.display = 'none';
+        this.audioTabPane.style.display = 'none';
+        
+        // Add active class to selected tab and show only its pane
+        if (tabId === 'objects') {
+            this.objectsTab.classList.add('active');
+            this.objectsTabPane.style.display = 'block';
+        } else if (tabId === 'stats') {
+            this.statsTab.classList.add('active');
+            this.statsTabPane.style.display = 'block';
+            // Refresh stats content if we have results
+            if (this.detectionResults) {
+                this.updateStats(this.detectionResults);
+            }
+        } else if (tabId === 'audio') {
+            this.audioTab.classList.add('active');
+            this.audioTabPane.style.display = 'block';
         }
-    } else if (tabId === 'audio') {
-        this.audioTab.classList.add('active');
-        this.objectsTabPane.style.display = 'block';
-        this.audioTabPane.style.display = 'block';
     }
-}
 
   
     async handleImageUpload(e) {
@@ -273,39 +273,69 @@ class VisionAIDetector {
             this.processingLock = false;
         }
     }
+
+    async runLiveDetection() {
+    if (!this.stream || !this.liveVideo.srcObject) return;
     
-    async toggleLiveCapture() {
-        if (!this.stream) {
-            // Start camera
-            try {
-                this.stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { 
-                        facingMode: 'environment',
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
-                    } 
-                });
-                
-                // Display video
-                this.liveVideo.srcObject = this.stream;
-                this.liveVideo.style.display = 'block';
-                this.detectedCanvas.style.display = 'none';
-                this.liveVideo.play();
-                
-                // Change button text
-                this.liveCaptureBtn.innerHTML = '<i class="bi bi-camera"></i><span>Capture</span>';
-                
-                // Enable screenshot button
-                this.screenshotBtn.disabled = false;
-            } catch (error) {
-                console.error('Error accessing camera:', error);
-                this.showError('Could not access camera. Please check permissions.');
-            }
-        } else {
-            // Take a snapshot and process
-            this.captureScreenshot();
+    try {
+        // Create temporary canvas to capture frame
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = this.liveVideo.videoWidth;
+        tempCanvas.height = this.liveVideo.videoHeight;
+        const tempCtx = tempCanvas.getContext('2d');
+        
+        // Handle the mirroring when taking screenshot - since we're flipping the video display
+        // we need to flip the canvas capture as well for consistency
+        tempCtx.translate(tempCanvas.width, 0);
+        tempCtx.scale(-1, 1);
+        tempCtx.drawImage(this.liveVideo, 0, 0);
+        
+        // Convert to data URL
+        const imageDataUrl = tempCanvas.toDataURL('image/jpeg');
+        this.currentImageDataUrl = imageDataUrl; // Store for later reprocessing
+        
+        // Get selected model and confidence threshold
+        const model = this.modelSelect.value;
+        const confidenceThreshold = parseInt(this.thresholdRange.value) / 100;
+        
+        // Process the image but don't show loading overlay for live detection
+        // to avoid flickering UI during continuous detection
+        
+        // Make API request to backend
+        const response = await fetch(`${this.apiUrl}/detect`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                image: imageDataUrl,
+                model: selectedModel,
+                confidence: confidenceThreshold
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Server returned ${response.status}`);
         }
+        
+        const data = await response.json();
+        
+        // Store results for use in other tabs
+        this.detectionResults = data;
+        
+        // Update object list
+        this.updateObjectList(data.grouped_objects);
+        
+        // Update stats if stats tab is active
+        if (this.statsTab.classList.contains('active')) {
+            this.updateStats(data);
+        }
+        
+    } catch (error) {
+        console.error('Live detection error:', error);
+        // Don't show error messages during live detection to avoid
+        // disrupting the user experience with error popups
     }
+    }
+    
     
     captureScreenshot() {
         if (!this.stream && this.liveVideo.style.display !== 'block') return;
@@ -319,7 +349,13 @@ class VisionAIDetector {
             tempCanvas.width = this.liveVideo.videoWidth;
             tempCanvas.height = this.liveVideo.videoHeight;
             const tempCtx = tempCanvas.getContext('2d');
+            
+            // FIX: Handle the mirroring when taking screenshot if needed
+            // If the video is not mirrored (as we fixed above), we don't need to flip the canvas
+            tempCtx.translate(tempCanvas.width, 0);
+            tempCtx.scale(-1, 1);
             tempCtx.drawImage(this.liveVideo, 0, 0);
+
             
             // Convert to data URL
             const imageDataUrl = tempCanvas.toDataURL('image/jpeg');
@@ -349,6 +385,50 @@ class VisionAIDetector {
             console.error('Error capturing screenshot:', error);
             this.showError('Failed to capture image. Please try again.');
             this.loadingOverlay.style.display = 'none';
+        }
+    }
+    async toggleLiveCapture() {
+        if (!this.isLiveDetectionRunning) {
+            try {
+                this.stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: 'environment',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    } 
+                });
+    
+                this.liveVideo.srcObject = this.stream;
+                this.liveVideo.style.display = 'block';
+                this.liveVideo.style.transform = 'scaleX(-1)';
+                this.liveVideo.play();
+    
+                this.detectedCanvas.style.display = 'none';
+                this.screenshotBtn.disabled = false;
+    
+                // Change button text to stop detection
+                this.liveCaptureBtn.innerHTML = '<i class="bi bi-stop-circle"></i><span>Stop Detection</span>';
+    
+                this.isLiveDetectionRunning = true;
+    
+                // Start live detection every 1.5 seconds
+                this.liveDetectionInterval = setInterval(() => this.runLiveDetection(), 1500);
+    
+            } catch (error) {
+                console.error('Error accessing camera:', error);
+                this.showError('Could not access camera. Please check permissions.');
+            }
+        } else {
+            // Stop live detection
+            clearInterval(this.liveDetectionInterval);
+            this.liveDetectionInterval = null;
+            this.isLiveDetectionRunning = false;
+    
+            // Stop video stream
+            this.stopVideoStream();
+    
+            // Reset button text
+            this.liveCaptureBtn.innerHTML = '<i class="bi bi-camera-video"></i><span>Live Camera</span>';
         }
     }
     
@@ -491,51 +571,50 @@ class VisionAIDetector {
         });
     }
     
-    initChart() {
-        if (this.chart) {
-            this.chart.destroy();
-        }
-        
-        const ctx = this.objectTypeChart.getContext('2d');
-        this.chart = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: [],
-                datasets: [{
-                    data: [],
-                    backgroundColor: [
-                        'rgba(255, 99, 132, 0.8)',
-                        'rgba(54, 162, 235, 0.8)',
-                        'rgba(255, 206, 86, 0.8)',
-                        'rgba(75, 192, 192, 0.8)',
-                        'rgba(153, 102, 255, 0.8)',
-                        'rgba(255, 159, 64, 0.8)',
-                        'rgba(199, 199, 199, 0.8)',
-                        'rgba(83, 102, 255, 0.8)',
-                        'rgba(40, 159, 64, 0.8)',
-                        'rgba(210, 199, 199, 0.8)'
-                    ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'right',
-                        labels: {
-                            color: '#fff',
-                            font: {
-                                size: 12
-                            }
-                        }
-                    }
+    
+    // pie chart code is here 
+    renderPieChart(groupedObjects) {
+    const ctx = document.getElementById('pieChartCanvas').getContext('2d');
+    const labels = groupedObjects.map(obj => obj.class);
+    const data = groupedObjects.map(obj => obj.count);
+
+    if (this.pieChart) {
+        this.pieChart.destroy();  // Remove old chart if exists
+    }
+
+    this.pieChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: data,
+                backgroundColor: [
+                    '#ff6384', '#36a2eb', '#ffcd56', '#4bc0c0',
+                    '#9966ff', '#ff9f40', '#e7e9ed', '#71b37c'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                },
+                title: {
+                    display: true,
+                    text: 'Object Type Distribution'
                 }
             }
-        });
-    }
-    
+        }
+    });
+}
+
+    // pie chart code is end 
+
+
+
+
     updateStats(data) {
         if (!data || !data.grouped_objects) return;
         
@@ -554,7 +633,9 @@ class VisionAIDetector {
         this.avgConfidence.textContent = `${avgConfidence.toFixed(1)}%`;
         
         // Update chart
-        this.updateChart(grouped_objects);
+        // this.updateChart(grouped_objects);
+        this.renderPieChart(data.grouped_objects);
+
     }
     
     updateChart(groupedObjects) {
@@ -577,6 +658,7 @@ class VisionAIDetector {
         this.chart.update();
     }
     
+    // FIX: Improved voice selection logic
     generateAudioDescription(groupedObjects) {
         // Cancel any ongoing speech
         window.speechSynthesis.cancel();
@@ -604,29 +686,66 @@ class VisionAIDetector {
         // Create utterance
         const utterance = new SpeechSynthesisUtterance(description);
         
-        // Get available voices
-        const voices = window.speechSynthesis.getVoices();
-        if (voices.length === 0) {
-            // If voices aren't loaded yet, wait and try again
+        // Get available voices - use our preloaded ones if available
+        const voices = this.availableVoices || window.speechSynthesis.getVoices();
+        
+        if (!voices || voices.length === 0) {
+            // If voices aren't loaded yet, set a flag and try again later
+            console.log("No voices available yet, waiting for voices to load...");
             window.speechSynthesis.onvoiceschanged = () => {
+                this.availableVoices = window.speechSynthesis.getVoices();
                 this.generateAudioDescription(groupedObjects);
             };
             return;
         }
         
-        // Select voice based on gender preference
+        // FIX: Improved voice selection logic
         let selectedVoice;
+        
+        // Debug available voices
+        console.log("Available voices:", voices.map(v => ({name: v.name, lang: v.lang, gender: this.detectVoiceGender(v.name)})));
+        
         if (voiceType === 'male') {
+            // Try to find an explicitly male voice first
             selectedVoice = voices.find(v => 
                 v.name.toLowerCase().includes('male') || 
-                (!v.name.toLowerCase().includes('female') && v.lang.startsWith('en'))
+                v.name.toLowerCase().includes('guy') ||
+                v.name.toLowerCase().includes('david') ||
+                v.name.toLowerCase().includes('james')
             );
-        } else {
+            
+            // If no explicit male voice found, use a voice that's not explicitly female
+            if (!selectedVoice) {
+                selectedVoice = voices.find(v => 
+                    !v.name.toLowerCase().includes('female') && 
+                    !v.name.toLowerCase().includes('woman') &&
+                    !v.name.toLowerCase().includes('girl') &&
+                    v.lang.startsWith('en')
+                );
+            }
+        } else { // female
+            // Try to find an explicitly female voice first
             selectedVoice = voices.find(v => 
                 v.name.toLowerCase().includes('female') || 
-                v.lang.startsWith('en')
+                v.name.toLowerCase().includes('woman') ||
+                v.name.toLowerCase().includes('girl') ||
+                v.name.toLowerCase().includes('samantha') ||
+                v.name.toLowerCase().includes('karen')
             );
+            
+            // If no explicit female voice found, use any English voice as fallback
+            if (!selectedVoice) {
+                selectedVoice = voices.find(v => v.lang.startsWith('en'));
+            }
         }
+        
+        // If we still couldn't find a voice, use the first available one
+        if (!selectedVoice && voices.length > 0) {
+            selectedVoice = voices[0];
+        }
+        
+        // Log the selected voice for debugging
+        console.log(`Selected ${voiceType} voice:`, selectedVoice ? selectedVoice.name : 'No voice found');
         
         // Set voice and rate
         if (selectedVoice) utterance.voice = selectedVoice;
@@ -635,6 +754,180 @@ class VisionAIDetector {
         // Speak
         window.speechSynthesis.speak(utterance);
     }
+    
+    // Helper method to detect gender from voice name
+    
+    detectVoiceGender(voiceName) {
+        
+        voiceName = voiceName.toLowerCase();
+
+
+        if (voiceName.includes('female') || 
+            voiceName.includes('woman') || 
+            voiceName.includes('girl') ||
+            voiceName.includes('samantha') ||
+            voiceName.includes('karen') ||
+            voiceName.includes('victoria')) {
+            return 'female';
+        } else if (voiceName.includes('male') || 
+                  voiceName.includes('man') || 
+                  voiceName.includes('guy') ||
+                  voiceName.includes('david') ||
+                  voiceName.includes('james')) {
+            return 'male';
+        } else {
+            return 'unknown';
+        }
+    }
+//     generateAudioDescription(groupedObjects) {
+//     // Cancel any ongoing speech
+//     window.speechSynthesis.cancel();
+    
+//     if (groupedObjects.length === 0) return;
+    
+//     // Get settings
+//     const voiceType = this.voiceTypeSelect.value;
+//     const speechRate = parseFloat(this.speechRateSelect.value);
+    
+//     // Build description
+//     let description;
+//     if (groupedObjects.length === 1) {
+//         const obj = groupedObjects[0];
+//         description = `I detected ${obj.count} ${obj.class}${obj.count > 1 ? 's' : ''}.`;
+//     } else {
+//         const lastItem = groupedObjects[groupedObjects.length - 1];
+//         const itemsExceptLast = groupedObjects.slice(0, -1).map(
+//             obj => `${obj.count} ${obj.class}${obj.count > 1 ? 's' : ''}`
+//         ).join(', ');
+        
+//         description = `I detected ${itemsExceptLast} and ${lastItem.count} ${lastItem.class}${lastItem.count > 1 ? 's' : ''}.`;
+//     }
+    
+//     // Create utterance
+//     const utterance = new SpeechSynthesisUtterance(description);
+    
+//     // Get fresh voices list
+//     const voices = window.speechSynthesis.getVoices();
+    
+//     if (!voices || voices.length === 0) {
+//         console.log("No voices available yet, waiting for voices to load...");
+//         // Store the parameters to retry after voices are loaded
+//         this.pendingAudioDescription = {
+//             groupedObjects,
+//             voiceType,
+//             speechRate
+//         };
+        
+//         // Set up a one-time event handler for voices loaded
+//         window.speechSynthesis.onvoiceschanged = () => {
+//             if (this.pendingAudioDescription) {
+//                 const params = this.pendingAudioDescription;
+//                 this.pendingAudioDescription = null; // Clear pending request
+//                 this.generateAudioDescription(params.groupedObjects);
+//             }
+//         };
+//         return;
+//     }
+    
+//     // Log available voices for debugging
+//     console.log("Available voices:", voices.map(v => ({
+//         name: v.name, 
+//         lang: v.lang
+//     })));
+    
+//     // Find an appropriate voice based on gender preference
+//     let selectedVoice = this.findVoiceByGender(voices, voiceType);
+    
+//     // If we still couldn't find a voice, use the first available English one or any voice
+//     if (!selectedVoice) {
+//         selectedVoice = voices.find(v => v.lang.startsWith('en')) || voices[0];
+//     }
+    
+//     // Log the selected voice for debugging
+//     console.log(`Selected ${voiceType} voice:`, selectedVoice ? selectedVoice.name : 'No voice found');
+    
+//     // Set voice and rate
+//     if (selectedVoice) utterance.voice = selectedVoice;
+//     utterance.rate = speechRate;
+    
+//     // Speak
+//     window.speechSynthesis.speak(utterance);
+// }
+
+// findVoiceByGender(voices, gender) {
+//     // First try: look for explicit gender indicators in voice name
+//     let voice = null;
+    
+//     if (gender === 'male') {
+//         // Try to find voices with explicit male indicators
+//         voice = voices.find(v => 
+//             this.isMaleVoice(v.name) && v.lang.startsWith('en')
+//         );
+        
+//         // If no English male voice, try any male voice
+//         if (!voice) {
+//             voice = voices.find(v => this.isMaleVoice(v.name));
+//         }
+        
+//         // If still no voice found, try to find a voice that's likely male based on name
+//         if (!voice) {
+//             voice = voices.find(v => 
+//                 !this.isFemaleVoice(v.name) && 
+//                 v.lang.startsWith('en') &&
+//                 (v.name.includes('David') || 
+//                  v.name.includes('James') || 
+//                  v.name.includes('Tom') ||
+//                  v.name.includes('Daniel'))
+//             );
+//         }
+//     } else { // female
+//         // Try to find voices with explicit female indicators
+//         voice = voices.find(v => 
+//             this.isFemaleVoice(v.name) && v.lang.startsWith('en')
+//         );
+        
+//         // If no English female voice, try any female voice
+//         if (!voice) {
+//             voice = voices.find(v => this.isFemaleVoice(v.name));
+//         }
+        
+//         // If still no voice found, try to find a voice that's likely female based on name
+//         if (!voice) {
+//             voice = voices.find(v => 
+//                 !this.isMaleVoice(v.name) && 
+//                 v.lang.startsWith('en') &&
+//                 (v.name.includes('Samantha') || 
+//                  v.name.includes('Victoria') || 
+//                  v.name.includes('Karen') ||
+//                  v.name.includes('Lisa'))
+//             );
+//         }
+//     }
+    
+//     return voice;
+// }
+
+isMaleVoice(voiceName) {
+    voiceName = voiceName.toLowerCase();
+    return voiceName.includes('male') || 
+           voiceName.includes('man') || 
+           voiceName.includes('guy') ||
+           voiceName.includes('david') ||
+           voiceName.includes('james') ||
+           voiceName.includes('tom') ||
+           voiceName.includes('daniel');
+}
+
+isFemaleVoice(voiceName) {
+    voiceName = voiceName.toLowerCase();
+    return voiceName.includes('female') || 
+           voiceName.includes('woman') || 
+           voiceName.includes('girl') ||
+           voiceName.includes('samantha') ||
+           voiceName.includes('karen') ||
+           voiceName.includes('victoria') ||
+           voiceName.includes('lisa');
+}
     
     showError(message) {
         this.objectList.innerHTML = `
